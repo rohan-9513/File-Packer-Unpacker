@@ -1,111 +1,136 @@
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-//	Class Name		: 	FilePacker
-//	Description 	: 	Command Line (CUI) based application to pack multiple text files 
-//					    from a folder into a single packed file.
-//	Author			: 	Rohan Subhash Khanse
-//	Date			:	19/07/2025
-//
-///////////////////////////////////////////////////////////////////////////////////////////
-
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;  
+import java.util.*;
 
-class FilePacker
+class MarvellousPacker
 {
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //	Function Name	: 	main
-    //	Input			: 	String[] (Command line arguments)
-    //	Output			: 	None
-    //	Description 	: 	Entry point for the program. 
-    //					    Takes folder name as input and creates a packed file with all .txt files.
-    //	Author			: 	Rohan Subhash Khanse
-    //	Date			:	19/07/2025
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    public static void main(String a[])
-    {
-        Scanner sobj = new Scanner(System.in);
-        System.out.println("--------- Packer Unpacker CUI Panel --------- ");
+    private String PackName;
+    private String DirName;
 
+    public MarvellousPacker(String A, String B)
+    {
+        this.PackName = A;
+        this.DirName = B;
+    }
+
+    public void PackingActivity()
+    {
         try
         {
-            System.out.println("Enter folder name which contains the files that you want to pack : ");
-            String FolderName = sobj.nextLine();
+            System.out.println("--------------------------------------------------------");
+            System.out.println("----------- Marvellous Packer Unpacker -----------------");
+            System.out.println("--------------------------------------------------------");
+            System.out.println("------------------ Packing Activity --------------------");       
+            System.out.println("--------------------------------------------------------");
 
-            File fobj = new File(FolderName);
+            int i = 0, j = 0, iRet = 0, iCountFile = 0;
 
-            System.out.println("Note : Packed file gets automatically created in the current directory.");
-            System.out.println("Enter the name of packed file that you want to create : ");
-            String PackFile = sobj.nextLine();
+            File fobj = new File(DirName);
 
-            File fpackobj = new File(PackFile);
-            fpackobj.createNewFile();
-
-            FileOutputStream fout = new FileOutputStream(fpackobj);
-
-            if(fobj.exists())
+            // Check the existance of Directory
+            if((fobj.exists()) && (fobj.isDirectory()))
             {
-                File allfiles[] = fobj.listFiles();
+                System.out.println(DirName + " is succesfully opened");
 
-                System.out.println("File names are : ");
+                File PackObj = new File(PackName);
 
-                byte Buffer[] = new byte[1024];
-                int ret = 0, Counter = 0;
-                String name;
+                // Create a packed file
+                boolean bRet = PackObj.createNewFile();
 
-                for(int i = 0; i < allfiles.length; i++)
+                if(bRet == false)
                 {
-                    name = allfiles[i].getName();
-
-                    if(name.endsWith(".txt"))
-                    {
-                        name = name + " " + (allfiles[i].length());
-                        System.out.println("File Name : " + allfiles[i].getName() + 
-                                           " with length : " + allfiles[i].length() + " bytes");
-
-                        // Header formation to ensure fixed 100-byte header
-                        for(int j = name.length(); j < 100; j++)    
-                        {
-                            name = name + " ";
-                        }
-
-                        // String to byte array conversion
-                        byte HeaderByte [] = name.getBytes(StandardCharsets.UTF_8);   
-
-                        // Write header in packed file
-                        fout.write(HeaderByte,0,HeaderByte.length); 
-
-                        FileInputStream fiobj = new FileInputStream(allfiles[i]);
-
-                        // Write file contents into packed file
-                        while((ret = fiobj.read(Buffer)) != -1)
-                        {
-                            fout.write(Buffer,0,ret);
-                        }  
-                        fiobj.close();
-                        Counter++;
-
-                        fout.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
-                    }
+                    System.out.println("Unable to create pack file");
+                    return;
                 }
 
-                // Summary
-                System.out.println("----- Summary -----");
-                System.out.println("Number of files scanned : " + allfiles.length);
-                System.out.println("Number of files packed successfully : " + Counter);
-                System.out.println("Thank you for using Packer Unpacker Application");
+                System.out.println("Packed file gets succesfully created with name : "+PackName);
+            
+                // Retive all files from directory
+                File Arr[] = fobj.listFiles();
+
+                // Packed file object
+                FileOutputStream foobj = new FileOutputStream(PackObj);
+                
+                // Buffer for read and write activity
+                byte Buffer[] = new byte[1024];
+
+                String Header = null;
+
+                // Directory traversal
+                for(i = 0; i < Arr.length; i++)
+                {
+                    Header = Arr[i].getName() + " " + Arr[i].length();
+                
+                    // Loop to form 100 bytes header
+                    for(j = Header.length(); j < 100; j++)
+                    {
+                        Header = Header + " ";
+                    }
+                    
+                    // Write header into pacekd file
+                    foobj.write(Header.getBytes());
+
+                    // Open file from directoy for reading
+                    FileInputStream fiobj = new FileInputStream(Arr[i]);
+
+                    // Write contents of file into packed file
+                    while((iRet = fiobj.read(Buffer)) != -1)
+                    {
+                        for(int k = 0; k < iRet; k++)
+                        {
+                            Buffer[k] = (byte)(Buffer[k] ^ 11);
+                        }
+                        foobj.write(Buffer,0,iRet);
+                        
+                        System.out.println("File name Scanned : "+Arr[i].getName());
+                        System.out.println("File size read is : "+iRet);
+                    }
+
+                    fiobj.close();
+                    iCountFile++;
+                }   
+
+                System.out.println("Packing activity done");
+                
+                System.out.println("--------------------------------------------------------");
+                System.out.println("------------------ Statistical Report ------------------");
+                System.out.println("--------------------------------------------------------");
+                
+                // To be add
+                System.out.println("Total files Packed : "+iCountFile);
+
+                System.out.println("--------------------------------------------------------");
+                System.out.println("--------- Thank you for using our application ----------");
+                System.out.println("--------------------------------------------------------");
             }
             else
             {
-                System.out.println("There is no such folder..");
+                System.out.println("There is no such directory");
             }
-        }
-        catch(Exception obj)
+        } // End of try
+        catch(Exception eobj)
+        {}
+    } // End of PackingActivity function
+} // End of MarvellousPacker class
+
+class FilePacker
+{
+    public static void main(String A[])
+    {
+        try
         {
-            System.out.println("Exception occurred : " + obj);
+            Scanner sobj = new Scanner(System.in);
+
+            System.out.println("Enter the name of folder that you want to pack : ");
+            String DirName = sobj.nextLine();
+
+            System.out.println("Enter the name of file that you want to create for packing : ");
+            String PackName = sobj.nextLine();
+
+            MarvellousPacker mobj = new MarvellousPacker(PackName, DirName);
+
+            mobj.PackingActivity();
         }
-    } // end of main
-} // end of class
+        catch(Exception eobj)
+        {}
+    } // End of main
+} // End of program467 class
