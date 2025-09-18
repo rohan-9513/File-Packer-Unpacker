@@ -1,84 +1,119 @@
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-//	Class Name		: 	FileUnpacker
-//	Description 	: 	Command Line (CUI) based application to unpack a packed file 
-//					    back into individual text files.
-//	Author			: 	Rohan Subhash Khanse
-//	Date			:	19/07/2025
-//
-///////////////////////////////////////////////////////////////////////////////////////////
-
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;  
+import java.util.*;
+
+class MarvellousUnpacker
+{
+    private String PackName;
+
+    public MarvellousUnpacker(String A)
+    {
+        this.PackName = A;
+    }
+
+    public void UnpackingActivity()
+    {
+        try
+        {
+            System.out.println("--------------------------------------------------------");
+            System.out.println("----------- Marvellous Packer Unpacker -----------------");
+            System.out.println("--------------------------------------------------------");
+            System.out.println("----------------- UnPacking Activity -------------------");       
+            System.out.println("--------------------------------------------------------");
+            
+            String Header = null;
+            File fobjnew = null;
+            int FileSize = 0, iRet = 0, iCountFile = 0;
+
+            File fobj = new File(PackName);
+
+            // If packed file is not present
+            if(!fobj.exists())
+            {
+                System.out.println("Unable to access Packed file");
+                return;
+            }
+
+            System.out.println("Packed file gets succesfully opened");
+            
+            FileInputStream fiobj = new FileInputStream(fobj);
+
+            // Buffer to read the header
+            byte HeaderBuffer[] = new byte[100];
+
+            // Scan the packed file to extract the files from it
+            while((iRet = fiobj.read(HeaderBuffer,0,100)) != -1)
+            {
+                // Convert byte array to String
+                Header = new String(HeaderBuffer);
+
+                Header = Header.trim();
+
+                // Tokenize the header into 2 parts
+                String Tokens[] = Header.split(" ");
+
+                fobjnew = new File(Tokens[0]);
+
+                // Create new file to extract
+                fobjnew.createNewFile();
+
+                FileSize = Integer.parseInt(Tokens[1]);
+
+                // Create new buffer to store files data
+                byte Buffer[] = new byte[FileSize];
+
+                FileOutputStream foobj = new FileOutputStream(fobjnew);
+
+                // Read the data from packed file
+                iRet = fiobj.read(Buffer,0,FileSize);
+
+                for(int k = 0; k < iRet; k++)
+                {
+                    Buffer[k] = (byte)(Buffer[k] ^ 11);
+                }
+                
+                // Write the data into extracted file
+                foobj.write(Buffer,0,FileSize);
+
+                System.out.println("File unpack with name : "+Tokens[0]+" having size "+FileSize);
+
+                iCountFile++;
+
+                foobj.close();
+            } // End of while
+
+            System.out.println("--------------------------------------------------------");
+            System.out.println("------------------ Statistical Report ------------------");
+            System.out.println("--------------------------------------------------------");
+
+            System.out.println("Total number if files unpacked : "+iCountFile);
+
+            System.out.println("--------------------------------------------------------");
+            System.out.println("--------- Thank you for using our application ----------");
+            System.out.println("--------------------------------------------------------");
+
+            fiobj.close();
+        }
+        catch(Exception eobj)
+        {}
+    }
+}
 
 class FileUnpacker
 {
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //	Function Name	: 	main
-    //	Input			: 	String[] (Command line arguments)
-    //	Output			: 	None
-    //	Description 	: 	Entry point for the program. 
-    //					    Reads a packed file and recreates original .txt files with data.
-    //	Author			: 	Rohan Subhash Khanse
-    //	Date			:	19/07/2025
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    public static void main(String a[])
+    public static void main(String A[])
     {
-        Scanner sobj = new Scanner(System.in);
-        System.out.println("--------- Packer Unpacker CUI Panel --------- ");
-
         try
         {
-            System.out.println("Note : Packed file should be in the current directory.");
-            System.out.println("Enter the name of packed file : ");
+            Scanner sobj = new Scanner(System.in);
 
-            String PackFile = sobj.nextLine();
-            File fpackobj = new File(PackFile);
+            System.out.println("Enter the name of file which contains packed data : ");
+            String PackName = sobj.nextLine();
 
-            FileInputStream fin = new FileInputStream(fpackobj);
-            int Ret = 0, Count = 0;
-            byte Header[] = new byte[100];
+            MarvellousUnpacker mobj = new MarvellousUnpacker(PackName);
 
-            if(fpackobj.exists())
-            {
-                while((Ret = fin.read(Header,0,100)) > 0)
-                {
-                    String StrHeader = new String(Header, StandardCharsets.UTF_8);
-
-                    String Arr[] = StrHeader.trim().split(" +");
-
-                    File obj = new File(Arr[0]);
-                    obj.createNewFile();
-                    System.out.println("New file dropped with name : " + Arr[0]);
-
-                    int FileSize = Integer.parseInt(Arr[1]);
-
-                    byte DataArray[] = new byte[FileSize];
-                    fin.read(DataArray,0,FileSize);
-
-                    FileOutputStream fout = new FileOutputStream(obj);
-                    fout.write(DataArray,0,FileSize);
-                    fout.close();
-
-                    Count++;
-                }
-
-                // Summary
-                System.out.println("----- Summary -----");
-                System.out.println("Number of files unpacked successfully : " + Count);
-                System.out.println("Thank you for using Packer Unpacker Application");
-            }
-            else
-            {
-                System.out.println("There is no such file..");
-            }
+            mobj.UnpackingActivity();
         }
-        catch(Exception obj)
-        {
-            System.out.println("Exception occurred : " + obj);
-        }
-    } // end of main
-} // end of class
+        catch(Exception eobj)
+        {}
+    } // End of main
+} // End of program467 class
